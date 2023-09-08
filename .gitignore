@@ -12,4 +12,5 @@ artifacts
 
 .deps
 .openzeppelin
+hardhat.config.js
 
