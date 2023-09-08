@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "./ICashPoolConsumer.sol";
-import "./IFilForwarder.sol";
-import "./Errors.sol";
-import "./IInterestRate.sol";
-import "./ILongVoucher.sol";
-import "./IProductCenter.sol";
-import "./IRecommendationCenter.sol";
-import "./IRecommendationCenterConsumer.sol";
-import "./ISlotManager.sol";
+import "../ICashPoolConsumer.sol";
+import "../IFilForwarder.sol";
+import "../Errors.sol";
+import "../IInterestRate.sol";
+import "../ILongVoucher.sol";
+import "../IProductCenter.sol";
+import "../IRecommendationCenter.sol";
+import "../IRecommendationCenterConsumer.sol";
+import "../ISlotManager.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter, ICashPoolConsumer, IRecommendationCenterConsumer {
+contract ProductCenterV2 is AccessControlUpgradeable, ISlotManager, IProductCenter, ICashPoolConsumer, IRecommendationCenterConsumer {
     /// constants
     bytes32 public constant ADMIN_ROLE = keccak256("admin");
     bytes32 public constant OPERATOR_ROLE = keccak256("operator");
@@ -66,27 +66,7 @@ contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter
 
     event OfferLoans(uint256 indexed productId, bytes receiver, uint256 amount, address cashier);
 
-    /**
-     * initialize method, called by proxy
-     */
-    function initialize(address longVoucher_, address recommendationCenter_, address filForwarder_, address initialAdmin_) public initializer {
-        require(longVoucher_ != address(0), Errors.ZERO_ADDRESS);
-        require(recommendationCenter_ != address(0), Errors.ZERO_ADDRESS);
-        require(filForwarder_ != address(0), Errors.ZERO_ADDRESS);
-        require(initialAdmin_ != address(0), Errors.ZERO_ADDRESS);
-
-        AccessControlUpgradeable.__AccessControl_init();
-
-        longVoucher = ILongVoucher(longVoucher_);
-        recommendationCenter = IRecommendationCenter(recommendationCenter_);
-        filForwarder = IFilForwarder(filForwarder_);
-
-        // grant roles
-        _grantRole(ADMIN_ROLE, initialAdmin_);
-        _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
-        _setRoleAdmin(OPERATOR_ROLE, ADMIN_ROLE);
-        _setRoleAdmin(CASHIER_ROLE, ADMIN_ROLE);
-    }
+    function initialize() public reinitializer(2) { }
 
     // ERC165
     function supportsInterface(
@@ -536,10 +516,6 @@ contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter
         uint256 value_
     ) external view override {
         require(_msgSender() == address(longVoucher), Errors.ILLEGAL_CALLER);
-        // skip mint zero value by ERC3525.transferFrom(uint,address,uint) function 
-        if (from_ == address(0) && fromTokenId_ == 0 && value_ == 0) {
-            return;
-        }
 
         ProductParameters memory parameters = _allProducts[_allProductsIndex[slot_]].parameters;
         // only mint or brun before online
@@ -562,8 +538,7 @@ contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter
         uint256 value_
     ) external override {
         require(_msgSender() == address(longVoucher), Errors.ILLEGAL_CALLER);
-        // skip mint zero value by ERC3525.transferFrom(uint,address,uint) function 
-        if (from_ == address(0) && fromTokenId_ == 0 && value_ == 0) {
+        if (value_ == 0) {
             return;
         }
 

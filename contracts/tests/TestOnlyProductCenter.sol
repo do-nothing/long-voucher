@@ -1,25 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "./ICashPoolConsumer.sol";
-import "./IFilForwarder.sol";
-import "./Errors.sol";
-import "./IInterestRate.sol";
-import "./ILongVoucher.sol";
-import "./IProductCenter.sol";
-import "./IRecommendationCenter.sol";
-import "./IRecommendationCenterConsumer.sol";
-import "./ISlotManager.sol";
+import "../ICashPoolConsumer.sol";
+import "../IFilForwarder.sol";
+import "../Errors.sol";
+import "../IInterestRate.sol";
+import "../ILongVoucher.sol";
+import "../IProductCenter.sol";
+import "../IRecommendationCenter.sol";
+import "../IRecommendationCenterConsumer.sol";
+import "../ISlotManager.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter, ICashPoolConsumer, IRecommendationCenterConsumer {
+contract TestOnlyProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter, ICashPoolConsumer, IRecommendationCenterConsumer {
     /// constants
     bytes32 public constant ADMIN_ROLE = keccak256("admin");
     bytes32 public constant OPERATOR_ROLE = keccak256("operator");
     bytes32 public constant CASHIER_ROLE = keccak256("cashier");
 
     // min subscription period 1 days
-    uint256 public constant MIN_SUBSCRIPTION_PERIOD = (24 * 3600) / 30;
+    uint256 public constant MIN_SUBSCRIPTION_PERIOD = 1;
 
     // max subscription period 28 days
     uint256 public constant MAX_SUBSCRIPTION_PERIOD = (24 * 3600) / 30 * 28;
@@ -536,10 +536,6 @@ contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter
         uint256 value_
     ) external view override {
         require(_msgSender() == address(longVoucher), Errors.ILLEGAL_CALLER);
-        // skip mint zero value by ERC3525.transferFrom(uint,address,uint) function 
-        if (from_ == address(0) && fromTokenId_ == 0 && value_ == 0) {
-            return;
-        }
 
         ProductParameters memory parameters = _allProducts[_allProductsIndex[slot_]].parameters;
         // only mint or brun before online
@@ -562,10 +558,6 @@ contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter
         uint256 value_
     ) external override {
         require(_msgSender() == address(longVoucher), Errors.ILLEGAL_CALLER);
-        // skip mint zero value by ERC3525.transferFrom(uint,address,uint) function 
-        if (from_ == address(0) && fromTokenId_ == 0 && value_ == 0) {
-            return;
-        }
 
         ProductData storage product = _allProducts[_allProductsIndex[slot_]];
 

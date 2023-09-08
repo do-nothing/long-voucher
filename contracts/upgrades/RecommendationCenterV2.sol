@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import "./ICashPoolConsumer.sol";
-import "./ILongVoucher.sol";
-import "./IRecommendation.sol";
-import "./IRecommendationCenter.sol";
-import "./IRecommendationCenterConsumer.sol";
+import "../ICashPoolConsumer.sol";
+import "../ILongVoucher.sol";
+import "../IRecommendation.sol";
+import "../IRecommendationCenter.sol";
+import "../IRecommendationCenterConsumer.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
 
-contract RecommendationCenter is
+contract RecommendationCenterV2 is
     Ownable2StepUpgradeable,
     IRecommendationCenter,
     ICashPoolConsumer,
@@ -73,33 +73,7 @@ contract RecommendationCenter is
     );
     event Claimed(address indexed referrer, uint256 earnings, uint256 voucherId);
 
-    /**
-     * initialize method, called by proxy
-     */
-    function initialize(
-        address longVoucher_,
-        address recommendation_,
-        uint256 referrerEarningsSlot_,
-        address initialOwner_
-    ) public initializer {
-        require(longVoucher_ != address(0), "zero address");
-        require(recommendation_ != address(0), "zero address");
-        require(initialOwner_ != address(0), "zero address");
-
-        // call super initialize methods
-        Ownable2StepUpgradeable.__Ownable2Step_init();
-
-        // set storage values
-        longVoucher = ILongVoucher(longVoucher_);
-        recommendation = IRecommendation(recommendation_);
-        referrerEarningsSlot = referrerEarningsSlot_;
-
-        // test
-        recommendation.isReferrer(initialOwner_);
-
-        // initialize owner
-        _transferOwnership(initialOwner_);
-    }
+    function initialize() public reinitializer(2) { }
 
     // ERC165
     function supportsInterface(

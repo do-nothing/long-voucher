@@ -12,7 +12,7 @@ import "./IRecommendationCenterConsumer.sol";
 import "./ISlotManager.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter, ICashPoolConsumer, IRecommendationCenterConsumer {
+contract ProductCenterV1 is AccessControlUpgradeable, ISlotManager, IProductCenter, ICashPoolConsumer, IRecommendationCenterConsumer {
     /// constants
     bytes32 public constant ADMIN_ROLE = keccak256("admin");
     bytes32 public constant OPERATOR_ROLE = keccak256("operator");
@@ -536,10 +536,6 @@ contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter
         uint256 value_
     ) external view override {
         require(_msgSender() == address(longVoucher), Errors.ILLEGAL_CALLER);
-        // skip mint zero value by ERC3525.transferFrom(uint,address,uint) function 
-        if (from_ == address(0) && fromTokenId_ == 0 && value_ == 0) {
-            return;
-        }
 
         ProductParameters memory parameters = _allProducts[_allProductsIndex[slot_]].parameters;
         // only mint or brun before online
@@ -562,10 +558,6 @@ contract ProductCenter is AccessControlUpgradeable, ISlotManager, IProductCenter
         uint256 value_
     ) external override {
         require(_msgSender() == address(longVoucher), Errors.ILLEGAL_CALLER);
-        // skip mint zero value by ERC3525.transferFrom(uint,address,uint) function 
-        if (from_ == address(0) && fromTokenId_ == 0 && value_ == 0) {
-            return;
-        }
 
         ProductData storage product = _allProducts[_allProductsIndex[slot_]];
 

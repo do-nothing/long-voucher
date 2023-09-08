@@ -9,7 +9,7 @@ import "./IRecommendationCenterConsumer.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
 
-contract RecommendationCenter is
+contract RecommendationCenterV1 is
     Ownable2StepUpgradeable,
     IRecommendationCenter,
     ICashPoolConsumer,
@@ -121,7 +121,6 @@ contract RecommendationCenter is
         ConsumerData storage consumerData = _allConsumerData[index];
         consumerData.consumer = consumer_;
         consumerData.referrerEarningsRatio = referrerEarningsRatio_;
-        _allConsumerDataIndex[consumer_] = index;
 
         emit AddedConsumer(consumer_, referrerEarningsRatio_);
     }
@@ -130,10 +129,6 @@ contract RecommendationCenter is
 
     function isVoucherTracked(uint256 voucherId) external view returns (bool) {
         return _voucherTrackingFlag[voucherId];
-    }
-
-    function isConsumer(address consumer_) external view returns (bool) {
-        return _existsConsumer(consumer_);
     }
 
     function consumerCount() public view returns (uint256) {
@@ -146,7 +141,7 @@ contract RecommendationCenter is
     }
 
     function getReferrerEarningsRatio(address consumer) external view returns (uint256) {
-        require(_existsConsumer(consumer), "not consumer");
+        require(_existsConsumer(consumer));
         return _getConsumerData(consumer).referrerEarningsRatio;
     }
 

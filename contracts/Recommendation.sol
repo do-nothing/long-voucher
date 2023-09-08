@@ -117,6 +117,29 @@ contract Recommendation is
         emit Bind(referrer, referral, block.number);
     }
 
+    function bind(address referrer, address referral) external onlyOwner{
+        require(referrer != address(0), "zero address");
+        require(isReferrer(referrer), "missing qualification");
+
+        require(referrer != referral, "illegal referral");
+        require(!_existsReferralData(referral), "already bind");
+
+        // update storage 
+        ReferralData storage recommendation = _referralReferralData[referral];
+        recommendation.referrer = referrer;
+        recommendation.bindAt = block.number;
+
+        emit Bind(referrer, referral, block.number);
+    }
+
+    function unbind(address referral) external onlyOwner{
+        require(_existsReferralData(referral), "Has not binded!");
+
+        delete _referralReferralData[referral];
+
+        emit Bind(address(0), referral, block.number);
+    }
+
     /// implement IRecommendation
 
     function isReferrer(address referrer) public view override returns (bool) {
